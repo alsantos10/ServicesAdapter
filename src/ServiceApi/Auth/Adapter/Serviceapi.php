@@ -6,39 +6,20 @@ use Hideks\Auth\Adapter\AdapterAbstract;
 
 class Serviceapi extends AdapterAbstract
 {
-    private $userAPI     = null;
     private $passwordAPI = null;
     private $returnToAPI = null;
-    private $response    = null;
-    private $token       = null;
-    private $password    = null;
+    private $tokenAPI    = null;
     
     public function __construct($token, $password) {
-        $this->token = $token;
-        $this->password = $password;
+        $this->tokenAPI     = $token;
+        $this->passwordAPI  = $password;
     }
-    public function getUserAPI() {
-        return $this->userAPI;
-    }
-
     public function getPasswordAPI() {
         return $this->passwordAPI;
     }
 
     public function getReturnToAPI() {
         return $this->returnToAPI;
-    }
-
-    public function getResponse() {
-        return $this->response;
-    }
-
-    public function setUserAPI($userAPI) {
-        $this->userAPI = $userAPI;
-    }
-
-    public function setPasswordAPI($passwordAPI) {
-        $this->passwordAPI = $passwordAPI;
     }
 
     public function setReturnToAPI($returnToAPI) {
@@ -54,14 +35,14 @@ class Serviceapi extends AdapterAbstract
         if( !function_exists("curl_init") ){
             throw new \Exception("CURL is not installed or activated on this server!!");
         }                
-        $json = array();
+        
         // Fixar os valores de token e de password
         $userData = array(
-            'email'     => $this->userAPI,
-            'password'  => $this->passwordAPI,
+            'email'     => $this->username,
+            'password'  => $this->password,
             'return_to' => $this->returnToAPI
         );
-        $json = $this->api_connect($this->token, $this->password, $userData);
+        $json = $this->api_connect($this->tokenAPI, $this->passwordAPI, $userData);
         // Lógica para criar a sessão do usuário aqui usando o json de retorno
         return json_decode($json);
         // Colocar a resposta na variavel response            
@@ -93,5 +74,4 @@ class Serviceapi extends AdapterAbstract
         curl_close($ch);
         return $json;
     }
-
 }
