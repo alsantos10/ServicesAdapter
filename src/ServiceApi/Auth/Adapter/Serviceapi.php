@@ -1,5 +1,7 @@
 <?php
 
+namespace ServiceApi\Auth\Adapter;
+
 use Hideks\Auth\Adapter\AdapterAbstract;
 
 class Serviceapi extends AdapterAbstract
