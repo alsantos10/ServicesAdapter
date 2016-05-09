@@ -42,7 +42,7 @@ class Serviceapi extends AdapterAbstract
             'password'  => $this->password,
             'return_to' => $this->returnToAPI
         );
-        $json = $this->api_connect($this->tokenAPI, $this->passwordAPI, $userData);
+        $json = $this->api_connect('GET', $this->tokenAPI, $this->passwordAPI, $userData);
         // Lógica para criar a sessão do usuário aqui usando o json de retorno
         return json_decode($json);
         // Colocar a resposta na variavel response            
@@ -55,21 +55,19 @@ class Serviceapi extends AdapterAbstract
      * @param array $data
      * @return type
      */
-    private function api_connect($token, $password, array $data) {
-        $ch = curl_init("http://services.brasileirinhas.com.br/api/1.0/auth/");
+    private function api_connect($method, $token, $password, array $data) {
+        $data['expires']        = time() + 60;
+        $data['remote_address'] = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+        $encrypt = openssl_encrypt(json_encode($data), 'AES-256-CBC', $password, 0, substr($token, 16));
+        $query = http_build_query(array(
+            'token' => $token,
+            'data'  => $encrypt
+        ));
+        $ch = curl_init("http://services.brasileirinhas.com.br/api/2.0/auth/?{$query}");
         curl_setopt($ch, CURLOPT_VERBOSE, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, array(
-            'token' => $token,
-            'data' => openssl_encrypt(json_encode(array(
-                'expires' => time() + 60,
-                'email' => $data['email'],
-                'password' => $data['password'],
-                'remote_address' => $_SERVER['REMOTE_ADDR']
-                    )), 'AES-256-CBC', $password, 0, substr($token, 16))
-        ));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         $json = curl_exec($ch);
         curl_close($ch);
         return $json;
